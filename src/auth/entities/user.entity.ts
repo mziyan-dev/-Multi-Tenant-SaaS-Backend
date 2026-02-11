@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Organization } from 'src/organization/entities/organization.entity';
-import { Role } from './roles.enum';
 
 @Entity()
 export class User {
@@ -18,13 +17,6 @@ export class User {
 
   @ManyToOne(() => Organization, (org) => org.user)
   organization: Organization;
-
-  @Column({
-    type: 'enum',
-    enum: Role,
-    default: Role.USER,
-  })
-  role: Role;
 
   @CreateDateColumn()
   createdAt: Date;
