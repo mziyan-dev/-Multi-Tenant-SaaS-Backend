@@ -3,6 +3,7 @@ import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { VerifyOtpDto } from './dto/verify.otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -13,10 +14,16 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+
+  @Post('verify')
+  verify(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyOtp(dto.email, dto.code);
+  }
   @Post('login')
   login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+    return this.authService.login(dto.email, dto.password);
   }
+
 
   @Post('refresh')
   refresh(@Body() dto: RefreshTokenDto) {

@@ -7,6 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FeaturesModule } from './features/features.module';
 import { ProfileModule } from './profile/profile.module';
+import { MailService } from './mail/mail.service';
+import { MailModule } from './mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -19,9 +22,10 @@ import { ProfileModule } from './profile/profile.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    UsersModule, OrganizationModule, AuthModule, FeaturesModule, ProfileModule
+    ConfigModule.forRoot({ isGlobal: true }),
+    UsersModule, OrganizationModule, AuthModule, FeaturesModule, ProfileModule, MailModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, MailService],
 })
 export class AppModule { }

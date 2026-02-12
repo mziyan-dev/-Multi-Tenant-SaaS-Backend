@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Organization } from 'src/organization/entities/organization.entity';
 import { ConfigModule } from '@nestjs/config';
+import { Otp } from './entities/OTP.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
     imports: [
@@ -16,7 +18,8 @@ import { ConfigModule } from '@nestjs/config';
         PassportModule,
         OrganizationModule,
         UsersModule,
-        TypeOrmModule.forFeature([User,Organization]),
+        MailModule,
+        TypeOrmModule.forFeature([User,Organization, Otp]),
         JwtModule.register({
             secret:process.env.JWT_SECRET,
             signOptions: { expiresIn: '1h' },
