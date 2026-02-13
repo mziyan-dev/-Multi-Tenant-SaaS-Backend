@@ -19,4 +19,11 @@ export class User {
 
   @Column()
   organizationId: number;
+
+  @Column({ nullable: true })
+  otp?: string;
+
+  @Column({ nullable: true })
+  otpExpiry?: Date;
+  
 }

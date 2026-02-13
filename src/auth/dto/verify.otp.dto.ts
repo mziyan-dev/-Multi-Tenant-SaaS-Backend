@@ -1,5 +1,6 @@
 import { IsEmail, IsNotEmpty, IsNumber } from 'class-validator';
 
+
 export class VerifyOtpDto {
   @IsEmail()
   email: string;
@@ -7,4 +8,6 @@ export class VerifyOtpDto {
   @IsNumber()
   @IsNotEmpty()
   code: number;
+
+
 }

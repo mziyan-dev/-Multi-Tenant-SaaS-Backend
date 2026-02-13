@@ -4,4 +4,11 @@ export class UpdateOrganizationDto {
     @IsString()
     @IsOptional()
     name?: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsString()
+    isActive?: boolean;
 }

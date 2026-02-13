@@ -14,7 +14,7 @@ export class FeaturesController {
     }
 
 
-    @Post()
+    @Post('create')
     createFeature(@Body() dto: CreateFeatureDto) {
         return this.featureService.createFeature(dto);
     }

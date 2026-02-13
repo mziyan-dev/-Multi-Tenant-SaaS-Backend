@@ -21,54 +21,67 @@ export class AuthService {
     private mailService: MailService,
   ) { }
 
-  private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
   async register(dto: RegisterDto) {
+
     const userExists = await this.userRepo.findOne({ where: { email: dto.email } });
+    console.log('User exists check:', userExists);
     if (userExists) throw new BadRequestException('Email already exists');
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    console.log('Hashed Password:', hashedPassword);
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    console.log('Generated OTP:', otp);
 
     const user = this.userRepo.create({
       name: dto.name,
       email: dto.email,
       password: hashedPassword,
-      isVerified: dto.isVerified ?? false,
+      isVerified: false,
       organizationId: dto.organizationId,
+      // otp: otp.toString(),
+      // otpExpiry: new Date(Date.now() + 5 * 60 * 1000),
     });
-
-    await this.userRepo.save(user);
-
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    await this.mailService.sendOtp(dto.email, otp); // 6-digit OTP
+    console.log('New User Entity:', user);
+    const savedUser = await this.userRepo.save(user);
 
     await this.otpRepo.save({
       email: dto.email,
       code: otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      tempPassword: dto.password,
     });
-
+    console.log('Saved User:', savedUser);
     await this.mailService.sendOtp(dto.email, otp);
-
-    return { message: 'OTP sent to your email' };
+    await this.otpRepo.update({ email: dto.email }, { tempPassword: dto.password });
+    return { message: 'User registered. OTP and credentials sent to email.' };
   }
 
   async verifyOtp(email: string, code: number) {
     const otpEntry = await this.otpRepo.findOne({ where: { email, code } });
-    if (!otpEntry || otpEntry.expiresAt < new Date()) {
-      throw new BadRequestException('OTP invalid or expired');
-    }
+
+    if (!otpEntry) throw new BadRequestException("OTP invalid");
+
+    if (otpEntry.expiresAt < new Date())
+      throw new BadRequestException("OTP expired");
 
     const user = await this.userRepo.findOne({ where: { email } });
-    if (!user) throw new BadRequestException('User not found');
+    if (!user) throw new BadRequestException("User not found");
+
     user.isVerified = true;
     await this.userRepo.save(user);
 
-    await this.otpRepo.delete({ email, code });
+    // send credentials email
+    await this.mailService.sendCredentials(
+      email,
+      user.name,
+      otpEntry.tempPassword ?? "Your chosen password"
+    );
 
-    return { message: 'User verified successfully' };
+    await this.otpRepo.delete({ email });
+
+    return { message: "User verified successfully" };
   }
 
 
@@ -77,12 +90,28 @@ export class AuthService {
     if (!user) throw new BadRequestException("User not found");
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw new BadRequestException("Invalid credentials");
+    if (!isMatch) throw new BadRequestException("Invalid email or password");
 
-    if (!user.isVerified) throw new UnauthorizedException("Verify email first");
+    if (!user.isVerified) {
+      const otp = Math.floor(100000 + Math.random() * 900000);
+
+      await this.otpRepo.save({
+        email: user.email,
+        code: otp,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      });
+
+      await this.mailService.sendOtp(user.email, otp);
+
+      return {
+        message: "Account not verified. OTP sent to email",
+        requiresVerification: true
+      };
+    }
 
     return { message: "Login successful" };
   }
+
 
   async refreshToken(token: string) {
     try {

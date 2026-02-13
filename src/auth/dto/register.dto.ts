@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean,  IsEmail, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class RegisterDto {
@@ -15,7 +15,13 @@ export class RegisterDto {
   @IsNumber()
   organizationId: number;
 
-  @IsOptional()
-  isVerified?: boolean;
+  // @IsBoolean()
+  // isVerified?: boolean;
+
+  // @IsNumber()
+  // otp?: number;
+
+  // @Type(() => Date)
+  // otpExpiry?: Date;
 
 }
