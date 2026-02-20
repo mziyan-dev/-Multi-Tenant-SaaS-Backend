@@ -15,6 +15,11 @@ export class RegisterDto {
   @IsNumber()
   organizationId: number;
 
+
+  @IsNotEmpty()
+  enum : ['ADMIN', 'USER', 'MANAGER']
+  role: string;
+
   // @IsBoolean()
   // isVerified?: boolean;
 

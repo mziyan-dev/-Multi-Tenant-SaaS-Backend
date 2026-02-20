@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -26,7 +26,12 @@ export class AuthController {
 
 
   @Post('refresh')
-  refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refreshToken(dto.refreshToken);
+  async refresh(@Body() dto: RefreshTokenDto) {
+    if (!dto.refreshToken) {
+      throw new UnauthorizedException('Refresh token missing');
+    }
+    const token = dto.refreshToken.replace('Bearer ', '');
+
+    return this.authService.refreshToken(token);
   }
 }

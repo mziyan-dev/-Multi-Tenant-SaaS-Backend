@@ -59,4 +59,9 @@ export class FeaturesService {
         });
     }
 
+    async listAllFeatures() {
+        return this.featurerepo.find();
+
+}
+
 }

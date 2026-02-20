@@ -4,4 +4,9 @@ export class CreateOrganizationDto {
     @IsString()
     @IsNotEmpty()
     name: string;
+
+
+    @IsNotEmpty()
+    @IsString()
+    description: string;
 }

@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional } from "class-validator";
+import { IsBoolean, IsNumber, IsOptional } from "class-validator";
 
 
 export class AssignFeatureDto {
@@ -10,7 +10,7 @@ export class AssignFeatureDto {
     featureId: number;
 
 
-    @IsOptional()
+    @IsBoolean()
     isEnabled?: boolean;
     
 }

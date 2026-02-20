@@ -92,24 +92,24 @@ export class AuthService {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new BadRequestException("Invalid email or password");
 
-    if (!user.isVerified) {
-      const otp = Math.floor(100000 + Math.random() * 900000);
+    // if (!user.isVerified) {
+    //   const otp = Math.floor(100000 + Math.random() * 900000);
 
-      await this.otpRepo.save({
-        email: user.email,
-        code: otp,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-      });
+    //   await this.otpRepo.save({
+    //     email: user.email,
+    //     code: otp,
+    //     expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    //   });
 
-      await this.mailService.sendOtp(user.email, otp);
+    //   await this.mailService.sendOtp(user.email, otp);
 
-      return {
-        message: "Account not verified. OTP sent to email",
-        requiresVerification: true
-      };
-    }
+    //   return {
+    //     message: "Account not verified. OTP sent to email",
+    //     requiresVerification: true
+    //   };
+    // }
 
-    return { message: "Login successful" };
+    return { message: "Login successful", accessToken: this.jwtService.sign({ sub: user.id, email: user.email }, { expiresIn: '1h' }), refreshToken: this.jwtService.sign({ sub: user.id, email: user.email }, { expiresIn: '7d', secret: process.env.JWT_REFRESH_SECRET || 'refreshSecretKey' }) };
   }
 
 
@@ -117,19 +117,21 @@ export class AuthService {
     try {
       const payload = this.jwtService.verify(token, {
         secret: process.env.JWT_REFRESH_SECRET || 'refreshSecretKey',
+        algorithms: ['HS256'],
       });
-
-      const user = await this.userRepo.findOne({ where: { id: payload.sub } });
+      const user = await this.userRepo.findOne({
+        where: { id: payload.sub },
+      });
       if (!user) throw new UnauthorizedException('User not found');
-
       const accessToken = this.jwtService.sign(
         { sub: user.id, email: user.email },
         { expiresIn: '1h' },
       );
-
       return { accessToken };
+
     } catch (err) {
-      throw new UnauthorizedException('Invalid refresh token');
+      console.log('Refresh error:', err.message);
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
   }
 

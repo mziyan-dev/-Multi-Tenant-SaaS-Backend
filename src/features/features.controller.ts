@@ -30,7 +30,11 @@ export class FeaturesController {
     toggleFeature(@Body() dto: ToggleFeatureDto) {
         return this.featureService.toggleFeature(dto);
     }
+    @Get('all')
+    listAllFeatures() {
+        return this.featureService.listAllFeatures();
 
 
+}
 
 }
